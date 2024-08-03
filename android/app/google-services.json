@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "416274674157",
+    "project_id": "mystory-4a64a",
+    "storage_bucket": "mystory-4a64a.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:416274674157:android:bc67b84814bb030909f7e4",
+        "android_client_info": {
+          "package_name": "com.asad373.tcf"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCGk-6S-5qMaCVR8C8FCd4VorfVzpjuz4A"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
