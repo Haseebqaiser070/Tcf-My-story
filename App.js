@@ -23,6 +23,7 @@ import WrittenCompre from './screens/WrittenComprehension/WrittenCompre';
 import {ProgressBarProvider} from './context/ProgressBarContext';
 import {AudioPlayerProvider} from './context/AudioPlayerContext';
 import {AdminProvider, AdminContext} from './context/AdminContext';
+import { UserProvider } from './context/UserContext';
 import {useContext} from "react";
 import ListCompExam from "./screens/ListenigComprhension/ListCompExam";
 import ListCompResults from "./screens/ListenigComprhension/ListCompResults";
@@ -57,6 +58,7 @@ function AppNavigator() {
     const {isAdmin} = useContext(AdminContext);
 
     return (
+
         <Stack.Navigator screenOptions={screenOptions}>
             <Stack.Screen name='onboard' component={Home}/>
             <Stack.Screen name='register' component={Register}/>
@@ -101,6 +103,7 @@ function AppNavigator() {
 export default function App() {
     return (
         <AdminProvider>
+            <UserProvider>
             <AudioPlayerProvider>
                 <ProgressBarProvider>
                     <NavigationContainer>
@@ -108,6 +111,7 @@ export default function App() {
                     </NavigationContainer>
                 </ProgressBarProvider>
             </AudioPlayerProvider>
+            </UserProvider>
         </AdminProvider>
     );
 }

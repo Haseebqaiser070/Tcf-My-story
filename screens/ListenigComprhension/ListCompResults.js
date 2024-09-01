@@ -8,8 +8,33 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import Colors from '../../colors/Color';
 import ResultModal from '../../components/ResultModal';
 import { useProgressBar } from '../../context/ProgressBarContext';
+import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
+import { db } from '../../firebaseConfig';
+import { useUser } from '../../context/UserContext';
+
+const updateUserPoints = async (userDocId, points) => {
+    try {
+        const userDocRef = doc(db, 'users', userDocId);
+        const userDoc = await getDoc(userDocRef);
+
+        if (userDoc.exists()) {
+            const userData = userDoc.data();
+            const currentPoints = userData.points || 0;
+
+            // Update only the points field
+            await updateDoc(userDocRef, { points: currentPoints + points });
+        } else {
+            // Handle case where the user document does not exist
+            await setDoc(userDocRef, { points: points });
+        }
+    } catch (error) {
+        console.error('Error updating user points:', error);
+    }
+};
+
 
 const ListCompResults = () => {
+    const { user } = useUser();
     const [examType, setExamType] = useState('');
     const { data, answers, questions, totalTime, setId } = useRoute().params;
     const Navigator = useNavigation();
@@ -28,22 +53,27 @@ const ListCompResults = () => {
             setExamType('Written');
         }
 
-        if (questions) {
-            let correct = 0;
-            let incorrect = 0;
-            questions.forEach((question, index) => {
-                if (answers[index] !== undefined) {
-                    if (question.correctOptionIndex === answers[index]) {
-                        correct++;
-                    } else {
-                        incorrect++;
+        const calculatePoints = async () => {
+            if (questions && user) {
+                let correct = 0;
+                questions.forEach((question, index) => {
+                    if (answers[index] !== undefined) {
+                        if (question.correctOptionIndex === answers[index]) {
+                            correct++;
+                        }
                     }
-                }
-            });
-            setCorrectAnswers(correct);
-            setIncorrectAnswers(incorrect);
-        }
-    }, [data, answers, questions]);
+                });
+                setCorrectAnswers(correct);
+                setIncorrectAnswers(questions.length - correct);
+
+                const gainedPoints = correct * 15;
+
+                await updateUserPoints(user.id, gainedPoints);
+            }
+        };
+
+        calculatePoints();
+    }, [data, answers, questions, user, setStopTimer]);
 
     const confirmExit = () => {
         setIsOpen(true);
@@ -146,7 +176,7 @@ const ListCompResults = () => {
                                                 </Text>
                                             </View>
                                             <TouchableOpacity style={resultStyle.assExamBtn} onPress={() => {
-                                                Navigator.navigate('answer', { questions, answers })
+                                                Navigator.navigate('answer', { questions, answers }) // Pass questions and answers to AnswerSheet
                                             }}>
                                                 <Text style={resultStyle.textColorWhite}>
                                                     Assess My Exam
@@ -158,7 +188,7 @@ const ListCompResults = () => {
                                                 <Image
                                                     style={{ width: 100, height: 100 }}
                                                     source={require("../../img/circlepro.png")}
-                                                />
+                                                ></Image>
                                             </View>
                                         </View>
                                     </View>

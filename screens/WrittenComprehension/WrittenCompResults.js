@@ -8,10 +8,34 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import Colors from '../../colors/Color';
 import ResultModal from '../../components/ResultModal';
 import { useProgressBar } from '../../context/ProgressBarContext';
+import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
+import { db } from '../../firebaseConfig';
+import { useUser } from '../../context/UserContext';
+
+const updateUserPoints = async (userDocId, points) => {
+    try {
+        const userDocRef = doc(db, 'users', userDocId);
+        const userDoc = await getDoc(userDocRef);
+
+        if (userDoc.exists()) {
+            const userData = userDoc.data();
+            const currentPoints = userData.points || 0;
+
+            // Update only the points field
+            await updateDoc(userDocRef, { points: currentPoints + points });
+        } else {
+            // Handle case where the user document does not exist
+            await setDoc(userDocRef, { points: points });
+        }
+    } catch (error) {
+        console.error('Error updating user points:', error);
+    }
+};
 
 const WrittenCompResults = () => {
+    const { user } = useUser();
     const [examType, setExamType] = useState('');
-    const { data, answers, questions, totalTime, setId } = useRoute().params; // Destructure setId from params
+    const { data, answers, questions, totalTime, setId } = useRoute().params;
     const Navigator = useNavigation();
     const [correctAnswers, setCorrectAnswers] = useState(0);
     const [incorrectAnswers, setIncorrectAnswers] = useState(0);
@@ -28,22 +52,27 @@ const WrittenCompResults = () => {
             setExamType('Written');
         }
 
-        if (questions) {
-            let correct = 0;
-            let incorrect = 0;
-            questions.forEach((question, index) => {
-                if (answers[index] !== undefined) {
-                    if (question.correctOptionIndex === answers[index]) {
-                        correct++;
-                    } else {
-                        incorrect++;
+        const calculatePoints = async () => {
+            if (questions && user) {
+                let correct = 0;
+                questions.forEach((question, index) => {
+                    if (answers[index] !== undefined) {
+                        if (question.correctOptionIndex === answers[index]) {
+                            correct++;
+                        }
                     }
-                }
-            });
-            setCorrectAnswers(correct);
-            setIncorrectAnswers(incorrect);
-        }
-    }, [data, answers, questions]);
+                });
+                setCorrectAnswers(correct);
+                setIncorrectAnswers(questions.length - correct);
+
+                const gainedPoints = correct * 15;
+
+                await updateUserPoints(user.id, gainedPoints);
+            }
+        };
+
+        calculatePoints();
+    }, [data, answers, questions, user, setStopTimer]);
 
     const confirmExit = () => {
         setIsOpen(true);
@@ -60,7 +89,7 @@ const WrittenCompResults = () => {
 
     const restartExam = () => {
         setShowModal(false);
-        Navigator.navigate('WrittenCompExam', { restart: true, setId }); // Pass setId back to WrittenCompExam
+        Navigator.navigate('WrittenCompExam', { restart: true, setId });
     };
 
     if (!questions) {
