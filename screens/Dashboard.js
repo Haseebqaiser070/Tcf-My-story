@@ -9,9 +9,10 @@ import {useNavigation} from "@react-navigation/native";
 import {auth} from "../firebaseConfig"
 import {useContext} from "react";
 import {AdminContext} from "../context/AdminContext";
-
+import { useUser } from "../context/UserContext";
 const Dashboard = () => {
     const {isAdmin} = useContext(AdminContext)
+    const { user } = useUser();
     const Navigator = useNavigation();
     const lang = ["English", "French", "Italian", "Hindi"];
     const count = [
@@ -60,7 +61,7 @@ const Dashboard = () => {
                         <Text
                             style={[dashboardStyle.textColor, dashboardStyle.userNameText]}
                         >
-                            {auth?.currentUser?.displayName + " "}
+                            {user?.name + " "}
                             <Image
                                 source={require("../img/hello.png")}
                                 resizeMode="contain"

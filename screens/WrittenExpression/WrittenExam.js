@@ -1,15 +1,22 @@
-import React, { useState, useEffect } from 'react';
-import { Text, View, TouchableOpacity, Image, ActivityIndicator, ScrollView } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import { collection, doc, getDoc } from 'firebase/firestore';
-import { db } from '../../firebaseConfig';
-import examModuleStyle from '../../style/examModule';
-import ssStyle from '../../style/ssstyle';
-import ProgressBar from '../../components/ProgressBar';
-import InputField from '../../components/Input';
-import Dialoge from '../../components/Dialoge';
-import Colors from '../../colors/Color';
-import { useProgressBar } from '../../context/ProgressBarContext';
+import React, { useEffect, useState } from "react";
+import {
+  ActivityIndicator,
+  Image,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { useNavigation } from "@react-navigation/native";
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "../../firebaseConfig";
+import examModuleStyle from "../../style/examModule";
+import ssStyle from "../../style/ssstyle";
+import ProgressBar from "../../components/ProgressBar";
+import InputField from "../../components/Input";
+import Dialoge from "../../components/Dialoge";
+import Colors from "../../colors/Color";
+import { useProgressBar } from "../../context/ProgressBarContext";
 
 const WrittenExam = ({ route }) => {
   const Navigator = useNavigation();
@@ -33,30 +40,30 @@ const WrittenExam = ({ route }) => {
 
   const fetchQuestionsFromFirestore = async () => {
     if (!setId) {
-      console.error('setId is required to fetch questions');
+      // console.error("setId is required to fetch questions");
       setLoading(false);
       return;
     }
 
     try {
-      const docRef = doc(db, 'Quiz', 'Written Expression', 'Questions', setId);
+      const docRef = doc(db, "Quiz", "Written Expression", "Questions", setId);
       const docSnapshot = await getDoc(docRef);
 
       if (!docSnapshot.exists()) {
-        console.log('No such document!');
+        console.log("No such document!");
         setQuestions([]);
       } else {
         const data = docSnapshot.data();
         if (Array.isArray(data.questions)) {
           setQuestions(data.questions);
         } else {
-          console.log('Questions field is not an array:', data.questions);
+          console.log("Questions field is not an array:", data.questions);
           setQuestions([]);
         }
       }
       setLoading(false);
     } catch (error) {
-      console.error('Error fetching document:', error);
+      console.error("Error fetching document:", error);
       setLoading(false);
     }
   };
@@ -87,7 +94,12 @@ const WrittenExam = ({ route }) => {
     if (currentQuestionIndex < questions.length - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
     } else {
-      Navigator.navigate('writtenExpResult', { userAnswers, questions , setId, totalTime});
+      Navigator.navigate("writtenExpResult", {
+        userAnswers,
+        questions,
+        setId,
+        totalTime,
+      });
     }
   };
 
@@ -95,89 +107,135 @@ const WrittenExam = ({ route }) => {
     if (currentQuestionIndex < questions.length - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
     } else {
-      Navigator.navigate('writtenExpResult', { userAnswers, questions, setId, totalTime });
+      Navigator.navigate("writtenExpResult", {
+        userAnswers,
+        questions,
+        setId,
+        totalTime,
+      });
     }
   };
 
   if (loading) {
     return (
-        <View style={[examModuleStyle.mainConatiner, { justifyContent: 'center', alignItems: 'center' }]}>
-          <ActivityIndicator size="large" color={Colors.primary} />
-        </View>
+      <View
+        style={[
+          examModuleStyle.mainConatiner,
+          { justifyContent: "center", alignItems: "center" },
+        ]}
+      >
+        <ActivityIndicator size="large" color={Colors.primary} />
+      </View>
     );
   }
 
   if (questions.length === 0) {
     return (
-        <View style={[examModuleStyle.mainConatiner, { justifyContent: 'center', alignItems: 'center' }]}>
-          <Text style={{ color: Colors.primary }}>No questions available.</Text>
-        </View>
+      <View
+        style={[
+          examModuleStyle.mainConatiner,
+          { justifyContent: "center", alignItems: "center" },
+        ]}
+      >
+        <Text style={{ color: Colors.primary }}>No questions available.</Text>
+      </View>
     );
   }
 
   const currentQuestion = questions[currentQuestionIndex];
+
   return (
-      <>
-        <View style={examModuleStyle.mainConatiner}>
-          <ScrollView>
-            <View style={examModuleStyle.subContainer}>
-              <View style={ssStyle.actionBar}>
-                <TouchableOpacity style={ssStyle.backButton} onPress={() => Navigator.goBack()}>
-                  <Image source={require("../../img/back.png")} />
-                </TouchableOpacity>
-                <View style={ssStyle.heading}>
-                  <Text style={[ssStyle.textColor, { fontSize: 18 }]}>
-                    Exam Module
-                  </Text>
-                </View>
+    <>
+      <View style={examModuleStyle.mainConatiner}>
+        <ScrollView>
+          <View style={examModuleStyle.subContainer}>
+            <View style={ssStyle.actionBar}>
+              <TouchableOpacity
+                style={ssStyle.backButton}
+                onPress={() => Navigator.goBack()}
+              >
+                <Image source={require("../../img/back.png")} />
+              </TouchableOpacity>
+              <View style={ssStyle.heading}>
+                <Text style={[ssStyle.textColor, { fontSize: 18 }]}>
+                  Exam Module
+                </Text>
               </View>
-              <View style={examModuleStyle.contentContainer}>
-                <View style={examModuleStyle.progressActionBar}>
-                  <View style={examModuleStyle.progressWidth}>
-                    <ProgressBar questions={questions} currentQuestionIndex={currentQuestionIndex} onQuestionComplete={handleNextQuestion} />
-                  </View>
-                  <View style={{ justifyContent: "center", alignItems: "center" }}>
-                    <View style={examModuleStyle.verticalDivider} />
-                  </View>
-                  <TouchableOpacity style={examModuleStyle.countChip} onPress={openTip}>
-                    <Text style={{ color: Colors.white }}>Tips</Text>
-                  </TouchableOpacity>
-                </View>
-                <View style={examModuleStyle.questionConatiner}>
-                  <Text style={examModuleStyle.questionText}>
-                    {currentQuestion ? currentQuestion.question : 'Loading question...'}
-                  </Text>
-                </View>
-                <View style={{ marginTop: 50 }}>
-                  <InputField
-                      hint={"Write your answer here"}
-                      multilieflag={true}
-                      onVlaueChnaged={(value) => handleAnswerChange(value)}
-                      fontSizePx={20}
-                      value={userAnswers[currentQuestionIndex] || ""}
+            </View>
+            <View style={examModuleStyle.contentContainer}>
+              <View style={examModuleStyle.progressActionBar}>
+                <View style={examModuleStyle.progressWidth}>
+                  <ProgressBar
+                    questions={questions}
+                    currentQuestionIndex={currentQuestionIndex}
+                    onQuestionComplete={handleNextQuestion}
                   />
                 </View>
+                <View
+                  style={{ justifyContent: "center", alignItems: "center" }}
+                >
+                  <View style={examModuleStyle.verticalDivider} />
+                </View>
+                <TouchableOpacity
+                  style={examModuleStyle.countChip}
+                  onPress={openTip}
+                >
+                  <Text style={{ color: Colors.white }}>Tips</Text>
+                </TouchableOpacity>
               </View>
-            </View>
-          </ScrollView>
-          <View style={examModuleStyle.bottomNavigation}>
-            <View style={examModuleStyle.btnBottom}>
-              <TouchableOpacity style={examModuleStyle.btnSkip} onPress={handleSkip}>
-                <Text style={examModuleStyle.btnSkipTextDecor}>Skip</Text>
-              </TouchableOpacity>
-              <View style={examModuleStyle.ValueChip}>
-                <Text style={{ fontWeight: 'bold' }}>{currentQuestionIndex + 1}/{questions.length}</Text>
-              </View>
-              <TouchableOpacity style={examModuleStyle.btnNext} onPress={handleNextQuestion}>
-                <Text style={examModuleStyle.btnTextColor}>
-                  {currentQuestionIndex < questions.length - 1 ? "Next" : "Submit"}
+              <View style={examModuleStyle.questionConatiner}>
+                <Text style={examModuleStyle.questionText}>
+                  {currentQuestion
+                    ? currentQuestion.question
+                    : "Loading question..."}
                 </Text>
-              </TouchableOpacity>
+              </View>
+              <View style={{ marginTop: 50 }}>
+                <InputField
+                  hint={"Write your answer here"}
+                  multilieflag={true}
+                  onVlaueChnaged={(value) => handleAnswerChange(value)}
+                  fontSizePx={20}
+                  value={userAnswers[currentQuestionIndex] || ""}
+                  key={currentQuestionIndex} // Adding key forces the InputField to re-render when question changes
+                />
+              </View>
             </View>
           </View>
+        </ScrollView>
+        <View style={examModuleStyle.bottomNavigation}>
+          <View style={examModuleStyle.btnBottom}>
+            <TouchableOpacity
+              style={examModuleStyle.btnSkip}
+              onPress={handleSkip}
+            >
+              <Text style={examModuleStyle.btnSkipTextDecor}>Skip</Text>
+            </TouchableOpacity>
+            <View style={examModuleStyle.ValueChip}>
+              <Text style={{ fontWeight: "bold" }}>
+                {currentQuestionIndex + 1}/{questions.length}
+              </Text>
+            </View>
+            <TouchableOpacity
+              style={examModuleStyle.btnNext}
+              onPress={handleNextQuestion}
+            >
+              <Text style={examModuleStyle.btnTextColor}>
+                {currentQuestionIndex < questions.length - 1
+                  ? "Next"
+                  : "Submit"}
+              </Text>
+            </TouchableOpacity>
+          </View>
         </View>
-        <Dialoge isOpen={isOpen} onClose={onClose} title={"Tip"} message={"Think outside the box to create it"} />
-      </>
+      </View>
+      <Dialoge
+        isOpen={isOpen}
+        onClose={onClose}
+        title={"Tip"}
+        message={currentQuestion?.tip || "Think out of the box to create it"}
+      />
+    </>
   );
 };
 

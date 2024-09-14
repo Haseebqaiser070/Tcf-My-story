@@ -72,7 +72,7 @@ const WrittenCompResults = () => {
         };
 
         calculatePoints();
-    }, [data, answers, questions, user, setStopTimer]);
+    }, [data, answers, questions, setStopTimer]);
 
     const confirmExit = () => {
         setIsOpen(true);

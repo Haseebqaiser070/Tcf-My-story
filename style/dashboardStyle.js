@@ -31,7 +31,6 @@ const dashboardStyle = StyleSheet.create({
 
     navHeading:{
         fontSize:20,
-        
     },
 
     navLeftContainer:{

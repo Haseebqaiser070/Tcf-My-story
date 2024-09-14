@@ -22,7 +22,6 @@ const ProgressBar = ({ questions, currentQuestionIndex, onQuestionComplete }) =>
 
   useEffect(() => {
     let interval;
-
     if (resetProgress) {
       resetProgressHandler();
     } else if (!isPlaying && !stopTimer) { // Only start the timer if the audio is not playing
@@ -124,7 +123,8 @@ const styles = StyleSheet.create({
   },
   progressCenter: {
     position: 'absolute',
-    left: scale(100),
+    left: scale(115),
+    top: scale(2),
     transform: [{ translateX: -6.5 }],
     flexDirection: 'row',
     alignItems: 'center',
